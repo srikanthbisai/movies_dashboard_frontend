@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx 
 'use client'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../providers'
@@ -10,17 +9,11 @@ import type { Movie } from '../types'
 import MovieMetricsChart from '../components/MovieMetricsChart'
 import MovieTable from '../components/MovieTable'
 import AddMovieDialog from '../components/AddMovieDialog'
+import AddCastDialog from '../components/AddCastDialog'
 
 export default function Dashboard() {
   const [movies, setMovies] = useState<Movie[]>([])
-  const [title, setTitle] = useState('')
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
-  const [castMember, setCastMember] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    place: ''
-  })
   
   const { user } = useAuth()
   const router = useRouter()
@@ -47,28 +40,30 @@ export default function Dashboard() {
     }
   }
 
-  const handleAddMovie = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleAddMovie = async (title: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/movies', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ title })
-      })
-      if (res.ok) {
-        setTitle('')
-        fetchMovies()
-      }
+        const res = await fetch('http://localhost:5000/api/movies', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({ title }),
+        });
+        if (res.ok) {
+            fetchMovies();
+        }
     } catch (err) {
-      console.error(err)
+        console.error(err);
     }
-  }
+};
 
-  const handleAddCast = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleAddCast = async (castMember: {
+    name: string
+    email: string
+    phone: string
+    place: string
+  }) => {
     if (!selectedMovie) return
 
     try {
@@ -81,7 +76,6 @@ export default function Dashboard() {
         body: JSON.stringify({ cast: castMember })
       })
       if (res.ok) {
-        setCastMember({ name: '', email: '', phone: '', place: '' })
         fetchMovies()
       }
     } catch (err) {
@@ -95,92 +89,53 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-slate-800">
       <Header />
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-8">
-          <MovieTable movies={movies} />
-          {/* Add Movie Form */}
-          {/* <div className="bg-black text-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Add New Movie</h2>
-            <form onSubmit={handleAddMovie} className="flex gap-4">
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Movie Title"
-                className="flex-1 px-3 py-2 border rounded-md"
-                required
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                Add Movie
-              </button>
-            </form>
-          </div> */}
-          {/* Add Movie Dialog */}
+          <div className="rounded-lg shadow-lg bg-gray-800 border border-gray-700"
+               style={{
+                 boxShadow: '0 0 10px rgba(0, 255, 255, 0.3), 0 0 20px rgba(0, 255, 255, 0.2)',
+               }}>
+            <MovieTable movies={movies} />
+          </div>
+
           <div className="flex justify-end">
             <AddMovieDialog onAddMovie={handleAddMovie} />
           </div>
 
+          <div className="rounded-lg shadow-lg bg-gray-800 border border-gray-700"
+               style={{
+                 boxShadow: '0 0 10px rgba(0, 255, 255, 0.3), 0 0 20px rgba(0, 255, 255, 0.2)',
+               }}>
+            <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
+          </div>
 
-          {/* Movie List */}
-          <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
+          <div className="rounded-lg shadow-lg bg-gray-800 border border-gray-700"
+               style={{
+                 boxShadow: '0 0 10px rgba(0, 255, 255, 0.3), 0 0 20px rgba(0, 255, 255, 0.2)',
+               }}>
+            <MovieMetricsChart movies={movies} />
+          </div>
 
-         <MovieMetricsChart movies={movies} />
-
-
-          {/* Add Cast Form */}
           {selectedMovie && (
-            <div className="bg-black text-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">
-                Add Cast Member to {selectedMovie.title}
-              </h2>
-              <form onSubmit={handleAddCast} className="space-y-4">
-                <input
-                  type="text"
-                  value={castMember.name}
-                  onChange={(e) => setCastMember({...castMember, name: e.target.value})}
-                  placeholder="Name"
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
+            <div className="bg-gray-800 text-white p-6 rounded-lg shadow-lg border border-gray-700"
+                 style={{
+                   boxShadow: '0 0 10px rgba(0, 255, 255, 0.3), 0 0 20px rgba(0, 255, 255, 0.2)',
+                 }}>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-teal-400">
+                  Cast Members - {selectedMovie.title}
+                </h2>
+                <AddCastDialog
+                  movie={selectedMovie}
+                  onAddCast={handleAddCast}
                 />
-                <input
-                  type="email"
-                  value={castMember.email}
-                  onChange={(e) => setCastMember({...castMember, email: e.target.value})}
-                  placeholder="Email"
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                />
-                <input
-                  type="tel"
-                  value={castMember.phone}
-                  onChange={(e) => setCastMember({...castMember, phone: e.target.value})}
-                  placeholder="Phone"
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                />
-                <input
-                  type="text"
-                  value={castMember.place}
-                  onChange={(e) => setCastMember({...castMember, place: e.target.value})}
-                  placeholder="Place"
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  Add Cast Member
-                </button>
-              </form>
+              </div>
               
-              {/* Cast List */}
-              <CastList movie={selectedMovie} />
+              <div className="rounded-lg bg-gray-800 border border-gray-700">
+                <CastList movie={selectedMovie} />
+              </div>
             </div>
           )}
         </div>
