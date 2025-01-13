@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import Modal from './Modal'
 import { PlusCircle } from 'lucide-react'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 interface AddMovieDialogProps {
   onAddMovie: (title: string) => Promise<void>
@@ -13,13 +15,20 @@ const AddMovieDialog = ({ onAddMovie }: AddMovieDialogProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await onAddMovie(title)
-    setTitle('')
-    setIsOpen(false)
+    try {
+      await onAddMovie(title)
+      toast.success('Movie added successfully!')
+      setTitle('')
+      setIsOpen(false)
+    } catch (error) {
+      toast.error('Failed to add movie. Please try again.')
+    }
   }
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={3000} />
+      
       <button
         onClick={() => setIsOpen(true)}
         className="flex items-center px-4 py-2 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition duration-300"
