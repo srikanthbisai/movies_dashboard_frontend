@@ -8,11 +8,15 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login`, {
         method: "POST",
@@ -27,10 +31,12 @@ export default function Login() {
         setError(
           data.message || "Invalid email or password. Please try again."
         );
+        setIsLoading(false);
       }
     } catch (err) {
       console.error(err);
       setError("Failed to login. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -56,6 +62,7 @@ export default function Login() {
             placeholder="Email"
             className="p-3 border border-solid border-teal-400 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             required
+            disabled={isLoading}
           />
           <input
             type="password"
@@ -64,19 +71,25 @@ export default function Login() {
             placeholder="Password"
             className="p-3 border border-solid border-teal-500 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             required
+            disabled={isLoading}
           />
 
           <button
             type="submit"
-            className="bg-teal-700 p-3 text-white font-bold w-full rounded-md hover:bg-teal-800 transition duration-300"
+            disabled={isLoading}
+            className={`bg-teal-700 p-3 text-white font-bold w-full rounded-md transition duration-300 
+              ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-teal-800'}`}
           >
-            Sign in
+            {isLoading ? 'Signing in...' : 'Sign in'}
           </button>
 
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
           <Link href="/register" className="text-center">
-            <button className="text-red-500 font-bold w-full rounded-md transition duration-300">
+            <button 
+              className="text-red-500 font-bold w-full rounded-md transition duration-300"
+              disabled={isLoading}
+            >
               {"Don't have an account ?"}{" "}
               <span className="text-yellow-500 hover:text-teal-800">
                 Sign Up

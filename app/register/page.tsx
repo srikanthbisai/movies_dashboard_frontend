@@ -8,10 +8,14 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/register`,
@@ -26,10 +30,12 @@ export default function Register() {
       } else {
         const data = await res.json();
         setError(data.message);
+        setIsSubmitting(false);
       }
     } catch (err) {
       console.error(err);
       setError("Registration failed. Please try again.");
+      setIsSubmitting(false);
     }
   };
 
@@ -55,6 +61,7 @@ export default function Register() {
             placeholder="Name"
             className="p-3 text-black border border-solid border-teal-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             required
+            disabled={isSubmitting}
           />
           <input
             type="email"
@@ -63,6 +70,7 @@ export default function Register() {
             placeholder="Email"
             className="p-3 text-black border border-solid border-teal-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             required
+            disabled={isSubmitting}
           />
           <input
             type="password"
@@ -71,13 +79,15 @@ export default function Register() {
             placeholder="Password"
             className="p-3 text-black border border-solid border-teal-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             required
+            disabled={isSubmitting}
           />
 
           <button
             type="submit"
-            className="bg-teal-700 p-3 text-white font-bold w-full rounded-md hover:bg-teal-800 transition duration-300"
+            className="bg-teal-700 p-3 text-white font-bold w-full rounded-md hover:bg-teal-800 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
           >
-            Register
+            {isSubmitting ? "Registering..." : "Register"}
           </button>
 
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
