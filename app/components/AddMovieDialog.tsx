@@ -20,7 +20,7 @@ const AddMovieDialog = ({ onAddMovie }: AddMovieDialogProps) => {
       toast.success('Movie added successfully!')
       setTitle('')
       setIsOpen(false)
-    } catch (error) {
+    } catch {
       toast.error('Failed to add movie. Please try again.')
     }
   }

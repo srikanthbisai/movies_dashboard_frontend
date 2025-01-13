@@ -32,7 +32,7 @@ const AddCastDialog = ({ movie, onAddCast }: AddCastDialogProps) => {
       toast.success('Cast member added successfully!')
       setCastMember({ name: '', email: '', phone: '', place: '' })
       setIsOpen(false)
-    } catch (error) {
+    } catch {
       toast.error('Failed to add cast member. Please try again.')
     }
   }
