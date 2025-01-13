@@ -1,4 +1,3 @@
-// app/movies/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
 import { MovieCard } from '../components/MovieCard'
@@ -53,7 +52,7 @@ export default function MoviesPage() {
           filterAndSortMovies(newMovies, searchTerm, sortOrder)
         }
         
-        setTotalPages(Math.min(data.total_pages, 5)) // Limiting to 5 pages (100 movies)
+        setTotalPages(Math.min(data.total_pages, 5))
       } catch (err) {
         setError('Error fetching movies. Please try again later.')
         console.error('Error fetching movies:', err)
@@ -68,14 +67,12 @@ export default function MoviesPage() {
   const filterAndSortMovies = (moviesList: Movie[], search: string, order: 'asc' | 'desc') => {
     let filtered = moviesList;
     
-    // Apply search filter
     if (search.trim()) {
       filtered = filtered.filter(movie =>
         movie.title.toLowerCase().includes(search.toLowerCase())
       )
     }
     
-    // Apply sorting
     filtered = [...filtered].sort((a, b) => {
       if (order === 'asc') {
         return a.vote_average - b.vote_average
@@ -117,44 +114,44 @@ export default function MoviesPage() {
     <div className="w-[90%] mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h2 className="text-2xl font-bold text-yellow-500 mb-6">Popular Movies</h2>
       
-      {/* Filter and Sort Controls */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex gap-10">
-          <input
-            type="text"
-            placeholder="Search movies..."
-            value={searchTerm}
-            onChange={handleSearch}
-            className="w-full px-4 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <a href="/dashboard" className="text-blue-400 hover:text-blue-300">
-            ← Dashboard
-          </a>
-
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:items-center">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search movies..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="w-full px-4 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex justify-between sm:justify-start gap-4 items-center">
+            <button
+              onClick={toggleSortOrder}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center gap-2 whitespace-nowrap"
+            >
+              <span>Rating</span>
+              {sortOrder === 'desc' ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              )}
+            </button>
+            <a href="/dashboard" className="text-blue-400 hover:text-blue-300 whitespace-nowrap">
+              ← Dashboard
+            </a>
+          </div>
         </div>
-        <button
-          onClick={toggleSortOrder}
-          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center gap-2"
-        >
-          <span>Rating</span>
-          {sortOrder === 'desc' ? (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-            </svg>
-          )}
-        </button>
       </div>
 
-      {/* Results count */}
       <div className="text-gray-400 mb-4">
         Showing {filteredMovies.length} results
       </div>
       
-      {/* Movie Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredMovies.map((movie) => (
           <MovieCard
@@ -167,13 +164,11 @@ export default function MoviesPage() {
         ))}
       </div>
       
-      {loading && (
-        <div className="text-center mt-8">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-            <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
-          </div>
+      <div className="text-center mt-8">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+          <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
         </div>
-      )}
+      </div>
       
       {!loading && currentPage < totalPages && filteredMovies.length > 0 && searchTerm === '' && (
         <div className="text-center mt-8">
