@@ -1,4 +1,3 @@
-// app/components/CastList.tsx
 'use client'
 import { Movie } from '../types'
 

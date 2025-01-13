@@ -1,4 +1,3 @@
-// app/chartanalysis/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
 import { Movie } from '../types';
@@ -10,7 +9,7 @@ export default function ChartAnalysis() {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/movies', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/movies`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }

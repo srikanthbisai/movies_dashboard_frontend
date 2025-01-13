@@ -1,6 +1,5 @@
-// app/dashboard/page.tsx
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../providers'
 import { useRouter } from 'next/navigation'
 import Header from '../components/Header'
@@ -24,23 +23,28 @@ export default function Dashboard() {
     fetchMovies()
   }, [user])
 
-  const fetchMovies = async () => {
+  const fetchMovies = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/movies', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/movies`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      const data = await res.json()
-      setMovies(data)
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const data = await res.json();
+      setMovies(data);
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    if (user) fetchMovies();
+  }, [user, fetchMovies]);
+  
 
   const handleAddMovie = async (title: string) => {
     try {
-        const res = await fetch('http://localhost:5000/api/movies', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/movies`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -65,7 +69,7 @@ export default function Dashboard() {
     if (!selectedMovie) return
 
     try {
-      const res = await fetch(`http://localhost:5000/api/movies/${selectedMovie._id}/cast`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/movies/${selectedMovie._id}/cast`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

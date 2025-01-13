@@ -1,4 +1,3 @@
-// utils/error-handling.ts
 import { toast } from 'react-hot-toast'
 
 export class ApiError extends Error {

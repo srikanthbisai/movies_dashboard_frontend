@@ -1,4 +1,3 @@
-// components/Toast.tsx
 'use client'
 import { Toaster } from 'react-hot-toast'
 

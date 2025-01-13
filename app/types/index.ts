@@ -1,4 +1,3 @@
-//app/types/index.ts
 export type Movie = {
     _id: string
     title: string

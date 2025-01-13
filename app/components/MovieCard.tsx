@@ -1,4 +1,3 @@
-// app/components/MovieCard.tsx
 interface MovieCardProps {
     title: string;
     imageUrl: string;

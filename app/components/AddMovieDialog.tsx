@@ -1,4 +1,3 @@
-// components/AddMovieDialog.tsx
 'use client'
 import { useState } from 'react'
 import Modal from './Modal'
