@@ -5,37 +5,97 @@ import { useAuth } from "../providers";
 import Link from "next/link";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+  const [errors, setErrors] = useState({
+    email: "",
+    password: ""
+  });
+  const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      return "Email is required";
+    }
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
+
+  const validatePassword = (password: string) => {
+    if (!password) {
+      return "Password is required";
+    }
+    if (password.length < 4) {
+      return "Password must be at least 4 characters long";
+    }
+    return "";
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear errors when user starts typing
+    setErrors(prev => ({
+      ...prev,
+      [name]: ""
+    }));
+    setServerError(null);
+  };
+
+  const validateForm = () => {
+    const emailError = validateEmail(formData.email);
+    const passwordError = validatePassword(formData.password);
+
+    setErrors({
+      email: emailError,
+      password: passwordError
+    });
+
+    return !emailError && !passwordError;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
-    setError(null);
     
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
+
       if (res.ok) {
         login(data.token, { id: data.userId, name: data.name });
         router.push("/dashboard");
       } else {
-        setError(
+        setServerError(
           data.message || "Invalid email or password. Please try again."
         );
-        setIsLoading(false);
       }
     } catch (err) {
       console.error(err);
-      setError("Failed to login. Please try again.");
+      setServerError("Failed to login. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -55,24 +115,41 @@ export default function Login() {
             Login to Your Account
           </h1>
 
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="p-3 border border-solid border-teal-400 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-            required
-            disabled={isLoading}
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="p-3 border border-solid border-teal-500 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-            required
-            disabled={isLoading}
-          />
+          <div className="flex flex-col gap-2">
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              onBlur={() => setErrors(prev => ({ ...prev, email: validateEmail(formData.email) }))}
+              placeholder="Email"
+              className={`p-3 border border-solid ${
+                errors.email ? 'border-red-500' : 'border-teal-400'
+              } text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              disabled={isLoading}
+            />
+            {errors.email && (
+              <span className="text-red-500 text-sm">{errors.email}</span>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              onBlur={() => setErrors(prev => ({ ...prev, password: validatePassword(formData.password) }))}
+              placeholder="Password"
+              className={`p-3 border border-solid ${
+                errors.password ? 'border-red-500' : 'border-teal-500'
+              } text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              disabled={isLoading}
+            />
+            {errors.password && (
+              <span className="text-red-500 text-sm">{errors.password}</span>
+            )}
+          </div>
 
           <button
             type="submit"
@@ -83,10 +160,13 @@ export default function Login() {
             {isLoading ? 'Signing in...' : 'Sign in'}
           </button>
 
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {serverError && (
+            <p className="text-red-500 text-sm text-center">{serverError}</p>
+          )}
 
           <Link href="/register" className="text-center">
             <button 
+              type="button"
               className="text-red-500 font-bold w-full rounded-md transition duration-300"
               disabled={isLoading}
             >

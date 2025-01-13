@@ -4,17 +4,116 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Register() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+
+  const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  const validateName = (name: string) => {
+    if (!name.trim()) {
+      return "Name is required";
+    }
+    if (name.trim().length < 2) {
+      return "Name must be at least 2 characters long";
+    }
+    if (!/^[a-zA-Z\s]*$/.test(name)) {
+      return "Name can only contain letters and spaces";
+    }
+    return "";
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      return "Email is required";
+    }
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
+
+  const validatePassword = (password: string) => {
+    if (!password) {
+      return "Password is required";
+    }
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return "Password must contain at least one lowercase letter";
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return "Password must contain at least one number";
+    }
+    if (!/(?=.*[!@#$%^&*])/.test(password)) {
+      return "Password must contain at least one special character (!@#$%^&*)";
+    }
+    return "";
+  };
+
+  const validateConfirmPassword = (confirmPassword: string) => {
+    if (!confirmPassword) {
+      return "Please confirm your password";
+    }
+    if (confirmPassword !== formData.password) {
+      return "Passwords do not match";
+    }
+    return "";
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    setErrors(prev => ({
+      ...prev,
+      [name]: ""
+    }));
+    setServerError(null);
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      name: validateName(formData.name),
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password),
+      confirmPassword: validateConfirmPassword(formData.confirmPassword)
+    };
+
+    setErrors(newErrors);
+
+    return !Object.values(newErrors).some(error => error !== "");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
-    setError(null);
 
     try {
       const res = await fetch(
@@ -22,19 +121,23 @@ export default function Register() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            password: formData.password
+          }),
         }
       );
       if (res.ok) {
         router.push("/login");
       } else {
         const data = await res.json();
-        setError(data.message);
-        setIsSubmitting(false);
+        setServerError(data.message || "Registration failed. Please try again.");
       }
     } catch (err) {
       console.error(err);
-      setError("Registration failed. Please try again.");
+      setServerError("Registration failed. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -54,33 +157,77 @@ export default function Register() {
             Create Your Account
           </h1>
 
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Name"
-            className="p-3 text-black border border-solid border-teal-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-            required
-            disabled={isSubmitting}
-          />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="p-3 text-black border border-solid border-teal-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-            required
-            disabled={isSubmitting}
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="p-3 text-black border border-solid border-teal-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-            required
-            disabled={isSubmitting}
-          />
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              onBlur={() => setErrors(prev => ({ ...prev, name: validateName(formData.name) }))}
+              placeholder="Name"
+              className={`p-3 border border-solid ${
+                errors.name ? 'border-red-500' : 'border-teal-400'
+              } text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              disabled={isSubmitting}
+            />
+            {errors.name && (
+              <span className="text-red-500 text-sm">{errors.name}</span>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              onBlur={() => setErrors(prev => ({ ...prev, email: validateEmail(formData.email) }))}
+              placeholder="Email"
+              className={`p-3 border border-solid ${
+                errors.email ? 'border-red-500' : 'border-teal-400'
+              } text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              disabled={isSubmitting}
+            />
+            {errors.email && (
+              <span className="text-red-500 text-sm">{errors.email}</span>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              onBlur={() => setErrors(prev => ({ ...prev, password: validatePassword(formData.password) }))}
+              placeholder="Password"
+              className={`p-3 border border-solid ${
+                errors.password ? 'border-red-500' : 'border-teal-500'
+              } text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              disabled={isSubmitting}
+            />
+            {errors.password && (
+              <span className="text-red-500 text-sm">{errors.password}</span>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              onBlur={() => setErrors(prev => ({ ...prev, confirmPassword: validateConfirmPassword(formData.confirmPassword) }))}
+              placeholder="Confirm Password"
+              className={`p-3 border border-solid ${
+                errors.confirmPassword ? 'border-red-500' : 'border-teal-500'
+              } text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              disabled={isSubmitting}
+            />
+            {errors.confirmPassword && (
+              <span className="text-red-500 text-sm">{errors.confirmPassword}</span>
+            )}
+          </div>
 
           <button
             type="submit"
@@ -90,14 +237,19 @@ export default function Register() {
             {isSubmitting ? "Registering..." : "Register"}
           </button>
 
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {serverError && (
+            <p className="text-red-500 text-sm text-center">{serverError}</p>
+          )}
 
-          <Link
-            href="/login"
-            className="text-center text-red-500 font-bold w-full rounded-md transition duration-300"
-          >
-            {"Already have an account?"}{" "}
-            <span className="text-yellow-500 hover:text-teal-800">Sign In</span>
+          <Link href="/login" className="text-center">
+            <button 
+              type="button"
+              className="text-red-500 font-bold w-full rounded-md transition duration-300"
+              disabled={isSubmitting}
+            >
+              {"Already have an account?"}{" "}
+              <span className="text-yellow-500 hover:text-teal-800">Sign In</span>
+            </button>
           </Link>
         </form>
       </div>
