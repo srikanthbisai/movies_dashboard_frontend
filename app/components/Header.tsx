@@ -15,13 +15,13 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+      <div className="w-[90%] mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <div className="flex items-center space-x-6">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 bg-clip-text text-transparent">
             Movie Dashboard
           </h1>
           <Link href="/movies" className="font-serif text-yellow-400 font-bold">
-            <button className="p-2 bg-gradient-to-r from-green-400 via-cyan-500 to-blue-500 text-yellow-300 rounded-md">
+            <button className="p-2 bg-gradient-to-r from-green-400 via-cyan-500 to-blue-500 text-white rounded-md">
               Browse Movies
             </button>
           </Link>

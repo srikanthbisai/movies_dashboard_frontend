@@ -3,7 +3,10 @@
 import { useState, useMemo } from 'react'
 import { Movie } from '../types'
 import { useMovieStore } from '../store/useStore'
-import { ChevronUp, ChevronDown, Trash, Edit, Eye, Download } from 'lucide-react'
+import { ChevronUp, ChevronDown, Trash, Edit, Download } from 'lucide-react'
+import { LineChart } from 'recharts'
+import Link from 'next/link'  
+import { RiEditFill } from "react-icons/ri";
 
 interface SortConfig {
   field: keyof Movie | 'castCount'
@@ -98,7 +101,7 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
 
   const exportToCsv = () => {
     const csvContent = [
-      ['Title', 'Cast Count', 'Created Date'].join(','),
+      ['Title', 'Cast Count'].join(','),
       ...paginatedMovies.map(movie => 
         [
           movie.title,
@@ -117,17 +120,42 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
   }
 
   return (
-    <div className="bg-black text-white rounded-lg shadow overflow-hidden">
+    <div className="p-2 text-white rounded-lg shadow overflow-hidden w-full">
       {/* Table Controls */}
       <div className="p-4 space-y-4">
         <div className="flex justify-between items-center">
-          <input
-            type="text"
-            placeholder="Search movies..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-3 py-2 border rounded-md w-64"
-          />
+          <div className="flex items-center space-x-4">
+            <input
+              type="text"
+              placeholder="Search movies..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-3 py-2 border rounded-md w-64 text-black"
+            />
+            <Link
+              href="/chartanalysis"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              <LineChart className="w-4 h-4" />
+              <span>View Metrics</span>
+            </Link>
+
+          {/* Page Size Selector */}
+            <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-400">Show:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className="px-2 py-1 border rounded-md text-black"
+          >
+            {PAGE_SIZES.map(size => (
+              <option key={size} value={size}>{size}</option>
+            ))}
+          </select>
+          <span className="text-sm text-gray-400">entries</span>
+        </div>
+
+          </div>
           <div className="space-x-2">
             {selectedRows.size > 0 && (
               <button
@@ -146,50 +174,12 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-4">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={filters.hasCast}
-              onChange={(e) => setFilters(prev => ({
-                ...prev,
-                hasCast: e.target.checked
-              }))}
-              className="rounded"
-            />
-            <span>Has Cast</span>
-          </label>
-          <input
-            type="date"
-            value={filters.createdAfter}
-            onChange={(e) => setFilters(prev => ({
-              ...prev,
-              createdAfter: e.target.value
-            }))}
-            className="px-3 py-2 border rounded-md"
-          />
-        </div>
 
-        {/* Page Size Selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Show:</span>
-          <select
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className="px-2 py-1 border rounded-md"
-          >
-            {PAGE_SIZES.map(size => (
-              <option key={size} value={size}>{size}</option>
-            ))}
-          </select>
-          <span className="text-sm text-gray-600">entries</span>
-        </div>
       </div>
 
       {/* Table */}
       <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-black">
+        <thead className="">
           <tr>
             <th className="px-6 py-3 text-left">
               <input
@@ -202,7 +192,6 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
             {[
               { field: 'title', label: 'Title' },
               { field: 'castCount', label: 'Cast Count' },
-              { field: 'createdAt', label: 'Created Date' }
             ].map(({ field, label }) => (
               <th
                 key={field}
@@ -220,7 +209,7 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
             <th className="px-6 py-3 text-right">Actions</th>
           </tr>
         </thead>
-        <tbody className="bg-black text-white divide-y divide-gray-200">
+        <tbody className=" text-white divide-y divide-gray-200">
           {paginatedMovies.map((movie) => (
             <tr key={movie._id} className="hover:bg-black text-white">
               <td className="px-6 py-4">
@@ -233,22 +222,9 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
               </td>
               <td className="px-6 py-4">{movie.title}</td>
               <td className="px-6 py-4">{movie.cast.length}</td>
-              <td className="px-6 py-4">
-                {new Date(movie.createdAt).toLocaleDateString()}
-              </td>
               <td className="px-6 py-4 text-right space-x-2">
-                <button 
-                  onClick={() => {/* Handle view */}}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <Eye className="w-4 h-4 inline" />
-                </button>
-                <button 
-                  onClick={() => {/* Handle edit */}}
-                  className="text-green-600 hover:text-green-800"
-                >
-                  <Edit className="w-4 h-4 inline" />
-                </button>
+                
+              
                 <button 
                   onClick={() => deleteMovie(movie._id)}
                   className="text-red-600 hover:text-red-800"
@@ -263,7 +239,7 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
 
       {/* Pagination */}
       <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
-        <div className="text-sm text-gray-700">
+        <div className="text-sm text-gray-400">
           Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, sortedMovies.length)} of {sortedMovies.length} entries
         </div>
         <div className="space-x-2">
@@ -272,7 +248,7 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
             disabled={currentPage === 1}
             className="px-3 py-1 border rounded-md disabled:opacity-50"
           >
-            Previous
+           👈️
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
@@ -290,7 +266,7 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
             disabled={currentPage === totalPages}
             className="px-3 py-1 border rounded-md disabled:opacity-50"
           >
-            Next
+            👉️
           </button>
         </div>
       </div>

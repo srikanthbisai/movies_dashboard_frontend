@@ -2,7 +2,6 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 import { Movie } from '../types';
 
 const MovieMetricsChart = ({ movies }: { movies: Movie[] }) => {
-  // Transform movie data for visualization
   const chartData = movies.map(movie => ({
     name: movie.title,
     castCount: movie.cast.length,

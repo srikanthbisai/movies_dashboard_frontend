@@ -1,15 +1,13 @@
+// app/dashboard/page.tsx
 'use client'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../providers'
 import { useRouter } from 'next/navigation'
 import Header from '../components/Header'
-import CastList from '../components/CastList'
 import MovieList from '../components/MovieList'
 import type { Movie } from '../types'
-import MovieMetricsChart from '../components/MovieMetricsChart'
-import MovieTable from '../components/MovieTable'
 import AddMovieDialog from '../components/AddMovieDialog'
-import AddCastDialog from '../components/AddCastDialog'
+import MovieTable from '../components/MovieTable'
 
 export default function Dashboard() {
   const [movies, setMovies] = useState<Movie[]>([])
@@ -58,7 +56,7 @@ export default function Dashboard() {
     }
 };
 
-  const handleAddCast = async (castMember: {
+  const handleAddCast = async (castMember :{
     name: string
     email: string
     phone: string
@@ -91,7 +89,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-800">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <main className="w-[90%] mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-8">
           <div className="rounded-lg shadow-lg bg-gray-800 border border-gray-700"
                style={{
@@ -108,36 +106,13 @@ export default function Dashboard() {
                style={{
                  boxShadow: '0 0 10px rgba(0, 255, 255, 0.3), 0 0 20px rgba(0, 255, 255, 0.2)',
                }}>
-            <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
+            <MovieList 
+              movies={movies} 
+              onSelectMovie={handleSelectMovie}
+              selectedMovie={selectedMovie}
+              onAddCast={handleAddCast}
+            />
           </div>
-
-          <div className="rounded-lg shadow-lg bg-gray-800 border border-gray-700"
-               style={{
-                 boxShadow: '0 0 10px rgba(0, 255, 255, 0.3), 0 0 20px rgba(0, 255, 255, 0.2)',
-               }}>
-            <MovieMetricsChart movies={movies} />
-          </div>
-
-          {selectedMovie && (
-            <div className="bg-gray-800 text-white p-6 rounded-lg shadow-lg border border-gray-700"
-                 style={{
-                   boxShadow: '0 0 10px rgba(0, 255, 255, 0.3), 0 0 20px rgba(0, 255, 255, 0.2)',
-                 }}>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-teal-400">
-                  Cast Members - {selectedMovie.title}
-                </h2>
-                <AddCastDialog
-                  movie={selectedMovie}
-                  onAddCast={handleAddCast}
-                />
-              </div>
-              
-              <div className="rounded-lg bg-gray-800 border border-gray-700">
-                <CastList movie={selectedMovie} />
-              </div>
-            </div>
-          )}
         </div>
       </main>
     </div>

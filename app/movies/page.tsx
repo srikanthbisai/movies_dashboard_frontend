@@ -2,6 +2,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { MovieCard } from '../components/MovieCard'
+import Link from 'next/link';
 
 interface Movie {
   id: number;
@@ -114,12 +115,12 @@ export default function MoviesPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="w-[90%] mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h2 className="text-2xl font-bold text-yellow-500 mb-6">Popular Movies</h2>
       
       {/* Filter and Sort Controls */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="w-full sm:w-64">
+        <div className="flex gap-10">
           <input
             type="text"
             placeholder="Search movies..."
@@ -127,8 +128,11 @@ export default function MoviesPage() {
             onChange={handleSearch}
             className="w-full px-4 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          <a href="/dashboard" className="text-blue-400 hover:text-blue-300">
+            ← Dashboard
+          </a>
+
         </div>
-        
         <button
           onClick={toggleSortOrder}
           className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center gap-2"
@@ -147,7 +151,7 @@ export default function MoviesPage() {
       </div>
 
       {/* Results count */}
-      <div className="text-gray-600 mb-4">
+      <div className="text-gray-400 mb-4">
         Showing {filteredMovies.length} results
       </div>
       
@@ -155,7 +159,7 @@ export default function MoviesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredMovies.map((movie) => (
           <MovieCard
-            key={movie.id}
+            key={`movie-${movie.id}`}
             title={movie.title}
             imageUrl={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
             rating={movie.vote_average}

@@ -35,10 +35,10 @@ const AddCastDialog = ({ movie, onAddCast }: AddCastDialogProps) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center px-4 py-2 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition duration-300"
+        className="flex items-center px-4 lg:py-2 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition duration-300"
       >
-        <UserPlus className="mr-2 h-4 w-4" />
-        Add Cast Member
+        <UserPlus className="mr-2 h-8 w-4" />
+        Add Cast 
       </button>
 
       <Modal
