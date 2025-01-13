@@ -18,6 +18,12 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+
+The project contains tech stack related to frontend comprising of Nextjs , Tailwind, Typescript and express and mongodb as backend. 
+
+
+The frontend has 3 pages one for fetching movies from an external api , one for dashboard movie management, and one for login and register. Addition of new movies and cast's to the movies are handled with toast notifications.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
