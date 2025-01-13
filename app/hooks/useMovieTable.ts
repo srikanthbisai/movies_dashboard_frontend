@@ -1,9 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Movie } from "../types";
-import { useMovieStore } from "../store/useStore"; 
+import { useMovieStore } from "../store/useStore";
 
 interface SortConfig {
-  field: keyof Movie | "castCount";
+  field: "title" | "castCount";
   direction: "asc" | "desc";
 }
 
@@ -23,7 +23,6 @@ export const useMovieTable = (movies: Movie[]) => {
 
   const deleteMovie = useMovieStore((state) => state.deleteMovie);
 
-  // Filter movies
   const filteredMovies = useMemo(() => {
     return movies.filter((movie) => {
       const matchesSearch = movie.title
@@ -38,22 +37,25 @@ export const useMovieTable = (movies: Movie[]) => {
     });
   }, [movies, searchTerm, filters]);
 
-  // Sort movies
   const sortedMovies = useMemo(() => {
     return [...filteredMovies].sort((a, b) => {
-      let aValue = sort.field === "castCount" ? a.cast.length : a[sort.field];
-      let bValue = sort.field === "castCount" ? b.cast.length : b[sort.field];
+      const aValue = sort.field === "castCount" ? a.cast.length : a[sort.field];
+      const bValue = sort.field === "castCount" ? b.cast.length : b[sort.field];
 
-      if (typeof aValue === "string") aValue = aValue.toLowerCase();
-      if (typeof bValue === "string") bValue = bValue.toLowerCase();
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        const aLower = aValue.toLowerCase();
+        const bLower = bValue.toLowerCase();
+        return sort.direction === "asc" 
+          ? aLower.localeCompare(bLower)
+          : bLower.localeCompare(aLower);
+      }
 
-      if (aValue < bValue) return sort.direction === "asc" ? -1 : 1;
-      if (aValue > bValue) return sort.direction === "asc" ? 1 : -1;
-      return 0;
+      return sort.direction === "asc"
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
     });
   }, [filteredMovies, sort]);
 
-  // Paginate movies
   const paginatedMovies = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     return sortedMovies.slice(start, start + pageSize);
@@ -61,60 +63,62 @@ export const useMovieTable = (movies: Movie[]) => {
 
   const totalPages = Math.ceil(sortedMovies.length / pageSize);
 
-  const handleSort = (field: SortConfig["field"]) => {
+  const handleSort = useCallback((field: SortConfig["field"]) => {
     setSort((prev) => ({
       field,
-      direction:
-        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+      direction: prev.field === field && prev.direction === "asc" ? "desc" : "asc",
     }));
-  };
+  }, []);
 
-  const handleSelectAll = () => {
-    if (selectedRows.size === paginatedMovies.length) {
+  const handleSelectAll = useCallback(() => {
+    setSelectedRows((prev) => 
+      prev.size === paginatedMovies.length
+        ? new Set()
+        : new Set(paginatedMovies.map((m) => m._id))
+    );
+  }, [paginatedMovies]);
+
+  const handleRowSelect = useCallback((movieId: string) => {
+    setSelectedRows((prev) => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(movieId)) {
+        newSelected.delete(movieId);
+      } else {
+        newSelected.add(movieId);
+      }
+      return newSelected;
+    });
+  }, []);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (window.confirm("Are you sure you want to delete the selected movies?")) {
+      selectedRows.forEach(deleteMovie);
       setSelectedRows(new Set());
-    } else {
-      setSelectedRows(new Set(paginatedMovies.map((m) => m._id)));
     }
-  };
+  }, [selectedRows, deleteMovie]);
 
-  const handleRowSelect = (movieId: string) => {
-    const newSelected = new Set(selectedRows);
-    if (newSelected.has(movieId)) {
-      newSelected.delete(movieId);
-    } else {
-      newSelected.add(movieId);
-    }
-    setSelectedRows(newSelected);
-  };
-
-  const handleBulkDelete = async () => {
-    if (confirm("Are you sure you want to delete the selected movies?")) {
-      selectedRows.forEach((movieId) => {
-        deleteMovie(movieId);
-      });
-      setSelectedRows(new Set());
-    }
-  };
-
-  const exportToCsv = () => {
+  const exportToCsv = useCallback(() => {
     const csvContent = [
-      ["Title", "Cast Count"].join(","),
+      ["Title", "Cast Count", "Created At"].join(","),
       ...paginatedMovies.map((movie) =>
         [
-          movie.title,
+          `"${movie.title.replace(/"/g, '""')}"`,
           movie.cast.length,
           new Date(movie.createdAt).toLocaleDateString(),
         ].join(",")
       ),
     ].join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "movies.csv";
-    a.click();
-  };
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "movies.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }, [paginatedMovies]);
 
   return {
     searchTerm,

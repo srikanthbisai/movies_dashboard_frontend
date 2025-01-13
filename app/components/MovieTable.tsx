@@ -1,3 +1,4 @@
+
 "use client";
 import { LineChart } from "recharts";
 import Link from "next/link";
@@ -23,6 +24,9 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
     totalPages,
   } = useMovieTable(movies);
 
+  // Type for sort fields
+  type SortableField = "title" | "castCount";
+
   return (
     <div className="p-2 text-white rounded-lg shadow overflow-hidden w-full">
       {/* Table Controls */}
@@ -44,7 +48,6 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
               <span>View Metrics</span>
             </Link>
 
-            {/* Page Size Selector */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-400">Show:</span>
               <select
@@ -99,7 +102,7 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
               <th
                 key={field}
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort(field as any)}
+                onClick={() => handleSort(field as SortableField)}
               >
                 <div className="flex items-center space-x-1">
                   <span>{label}</span>
@@ -109,7 +112,7 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
             ))}
           </tr>
         </thead>
-        <tbody className=" text-white divide-y divide-gray-200">
+        <tbody className="text-white divide-y divide-gray-200">
           {paginatedMovies.map((movie) => (
             <tr key={movie._id} className="hover:bg-black text-white">
               <td className="px-6 py-4">
@@ -155,7 +158,7 @@ export default function MovieTable({ movies }: { movies: Movie[] }) {
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-3 py-1  disabled:opacity-50 text-xl"
+            className="px-3 py-1 disabled:opacity-50 text-xl"
           >
             ▶️
           </button>

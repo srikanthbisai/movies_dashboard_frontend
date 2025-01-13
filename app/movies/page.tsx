@@ -2,7 +2,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { MovieCard } from '../components/MovieCard'
-import Link from 'next/link';
 
 interface Movie {
   id: number;
